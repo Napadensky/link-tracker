@@ -1,13 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Post,
-  Req,
-  Res,
-  UsePipes,
-  ValidationPipe,
-} from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, Res } from '@nestjs/common';
 import { AppService } from './app.service';
 import { Response } from 'express';
 import { CreateLinkDto } from './dto/create-link.dto';
@@ -28,6 +19,7 @@ export class AppController {
     @Body() createLinkDto: CreateLinkDto,
     @Req() req: any,
   ): Response {
+    // start craeteLink controller method
     this.appService.createLink(createLinkDto, req.headers.host);
     res.status(200).json({
       data: this.appService.createLink(createLinkDto, req.headers.host),
