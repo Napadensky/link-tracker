@@ -1,0 +1,22 @@
+@URL=http://localhost:3000
+
+### Get health status
+GET {{URL}}/health HTTP/1.1
+Content-Type: application/json
+
+### Create a new short URL
+POST {{URL}}/create HTTP/1.1
+Content-Type: application/json
+
+{ 
+  "url": "https://www.google.com",
+  "password": "1234"
+}
+
+### Redirect to the original URL
+GET {{URL}}/l/efwe3?password=1234 HTTP/1.1
+Content-Type: application/json
+
+### Get the stats of a short URL
+GET {{URL}}/efwe3/stats HTTP/1.1
+Content-Type: application/json
