@@ -1,7 +1,18 @@
-import { Body, Controller, Get, Post, Req, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Put,
+  Query,
+  Req,
+  Res,
+} from '@nestjs/common';
 import { AppService } from './app.service';
 import { Response } from 'express';
 import { CreateLinkDto } from './dto/create-link.dto';
+import * as bcryptjs from 'bcryptjs';
 
 @Controller()
 export class AppController {
@@ -14,28 +25,84 @@ export class AppController {
   }
 
   @Post('create')
-  createLink(
+  async createLink(
     @Res() res: Response,
     @Body() createLinkDto: CreateLinkDto,
     @Req() req: any,
-  ): Response {
+  ): Promise<Response> {
     // start craeteLink controller method
-    this.appService.createLink(createLinkDto, req.headers.host);
-    res.status(200).json({
-      data: this.appService.createLink(createLinkDto, req.headers.host),
-      error: false,
-      message: 'Link created',
+    const createLinkDtoClone = {
+      ...createLinkDto,
+      password: await bcryptjs.hash(createLinkDto.password, 10),
+    };
+
+    const newDocument = await this.appService.createLink(createLinkDtoClone);
+
+    res.status(201).json({
+      link: `${req.protocol}://${req.get('host')}/l/${newDocument.id}`,
+      target: createLinkDto.url,
     });
+
     return res;
   }
 
   @Get('l/:id')
-  redirectLink(): string {
-    return this.appService.getHello();
+  async redirectLink(
+    @Param('id') id: string,
+    @Query('password') query: string,
+    @Res() res: Response,
+  ): Promise<Response> {
+    // start redirectLink controller method
+
+    try {
+      const data: any = await this.appService.findOne(id);
+      const isExpired = new Date(data?.expiresAt) < new Date();
+      const isPasswordValid = await bcryptjs.compare(query, data.password);
+
+      if (!data) throw new Error('Link not found');
+      if (!data.valid) throw new Error('Link not found');
+      if (isExpired) {
+        await this.appService.updateOne(id, { valid: false });
+        throw new Error('Link not found');
+      }
+      if (data.password != query && !isPasswordValid) {
+        throw new Error('Link not found');
+      }
+
+      data.clicks += 1;
+
+      await this.appService.updateOne(id, data);
+
+      res
+        .set('cache-control', 'no-store')
+        .redirect(301, `${data.url}?t=${Date.now()}`);
+      return res;
+    } catch (error) {
+      return res.send(
+        `
+          <body style="display: grid;align-content: center;justify-content: center;text-align: center;">
+            <div><h1>Link not found</h1></div>
+            <div><h1>404</h1></div>
+            <div><h1>${error}</h1></div>
+          </body>
+        `,
+      );
+    }
   }
 
-  @Get('l/:id/status')
-  statusLink(): string {
-    return this.appService.getHello();
+  @Put('l/:id')
+  async invalidLink(@Param('id') id: string, @Res() res): Promise<Response> {
+    // start invalidLink controller method
+    const data = await this.appService.updateOne(id, { valid: false });
+    res.status(200).json({ message: 'Link invalid', data });
+    return res;
+  }
+
+  @Get('l/:id/stats')
+  async statusLink(@Param('id') id: string, @Res() res): Promise<Response> {
+    // start statusLink controller method
+    const data = await this.appService.findOne(id);
+    res.status(200).json({ stats: data.clicks });
+    return res;
   }
 }
