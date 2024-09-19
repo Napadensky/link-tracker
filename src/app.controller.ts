@@ -60,16 +60,27 @@ export class AppController {
       const isPasswordValid = await bcryptjs.compare(query, data.password);
 
       if (!data) throw new Error('Link not found');
-      if (!data.valid) throw new Error('Link not found');
+      if (!data.valid) {
+        data.clicks.failed += 1;
+        await this.appService.updateOne(id, data);
+
+        throw new Error('Link not found');
+      }
       if (isExpired) {
-        await this.appService.updateOne(id, { valid: false });
+        data.clicks.failed += 1;
+        data.valid = false;
+
+        await this.appService.updateOne(id, data);
         throw new Error('Link not found');
       }
       if (data.password != query && !isPasswordValid) {
+        data.clicks.failed += 1;
+        await this.appService.updateOne(id, data);
+
         throw new Error('Link not found');
       }
 
-      data.clicks += 1;
+      data.clicks.success += 1;
 
       await this.appService.updateOne(id, data);
 
@@ -93,16 +104,31 @@ export class AppController {
   @Put('l/:id')
   async invalidLink(@Param('id') id: string, @Res() res): Promise<Response> {
     // start invalidLink controller method
-    const data = await this.appService.updateOne(id, { valid: false });
-    res.status(200).json({ message: 'Link invalid', data });
-    return res;
+    try {
+      const data = await this.appService.updateOne(id, { valid: false });
+      if (!data) throw new Error('Link not found');
+      res.status(200).json({ message: 'Link invalid', data });
+      return res;
+    } catch (error) {
+      res.status(404).json({ message: error.message });
+      return res;
+    }
   }
 
   @Get('l/:id/stats')
   async statusLink(@Param('id') id: string, @Res() res): Promise<Response> {
     // start statusLink controller method
-    const data = await this.appService.findOne(id);
-    res.status(200).json({ stats: data.clicks });
-    return res;
+    try {
+      const data = await this.appService.findOne(id);
+      if (!data) throw new Error('Link not found');
+      const { success, failed } = data.clicks;
+      res
+        .status(200)
+        .json({ stats: { success, failed, total: success + failed } });
+      return res;
+    } catch (error) {
+      res.status(404).json({ message: error.message });
+      return res;
+    }
   }
 }

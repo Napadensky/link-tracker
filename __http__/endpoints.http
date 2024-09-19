@@ -15,11 +15,11 @@ Content-Type: application/json
 }
 
 ### Redirect to the original URL
-GET {{URL}}/l/4zCI6?password=1234 HTTP/1.1
+GET {{URL}}/l/JNu95?password=1234 HTTP/1.1
 Content-Type: application/json
 
 ### Invalid to link
-PUT {{URL}}/l/3zt8I?password=1234 HTTP/1.1
+PUT {{URL}}/l/JNu95?password=1234 HTTP/1.1
 Content-Type: application/json
 
 ### Get the stats of a short URL
