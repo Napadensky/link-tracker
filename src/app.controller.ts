@@ -13,6 +13,7 @@ import { AppService } from './app.service';
 import { Response } from 'express';
 import { CreateLinkDto } from './dto/create-link.dto';
 import * as bcryptjs from 'bcryptjs';
+import { ClicksType } from './schemas/link.schema';
 
 @Controller()
 export class AppController {
@@ -30,7 +31,6 @@ export class AppController {
     @Body() createLinkDto: CreateLinkDto,
     @Req() req: any,
   ): Promise<Response> {
-    // start craeteLink controller method
     const createLinkDtoClone = {
       ...createLinkDto,
       password: await bcryptjs.hash(createLinkDto.password, 10),
@@ -52,8 +52,6 @@ export class AppController {
     @Query('password') query: string,
     @Res() res: Response,
   ): Promise<Response> {
-    // start redirectLink controller method
-
     try {
       const data: any = await this.appService.findOne(id);
       const isExpired = new Date(data?.expiresAt) < new Date();
@@ -102,11 +100,20 @@ export class AppController {
   }
 
   @Put('l/:id')
-  async invalidLink(@Param('id') id: string, @Res() res): Promise<Response> {
-    // start invalidLink controller method
+  async invalidLink(
+    @Param('id') id: string,
+    @Query('password') query: string,
+    @Res() res: Response,
+  ): Promise<Response> {
     try {
       const data = await this.appService.updateOne(id, { valid: false });
       if (!data) throw new Error('Link not found');
+
+      const isPasswordValid = await bcryptjs.compare(query, data?.password);
+      if (data?.password != query && !isPasswordValid) {
+        throw new Error('Link not found');
+      }
+
       res.status(200).json({ message: 'Link invalid', data });
       return res;
     } catch (error) {
@@ -117,11 +124,10 @@ export class AppController {
 
   @Get('l/:id/stats')
   async statusLink(@Param('id') id: string, @Res() res): Promise<Response> {
-    // start statusLink controller method
     try {
       const data = await this.appService.findOne(id);
       if (!data) throw new Error('Link not found');
-      const { success, failed } = data.clicks;
+      const { success, failed } = data.clicks as ClicksType;
       res
         .status(200)
         .json({ stats: { success, failed, total: success + failed } });

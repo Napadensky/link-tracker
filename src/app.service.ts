@@ -11,20 +11,16 @@ export class AppService {
     private readonly linkModel: Model<Link>,
   ) {}
 
-  getHello(): string {
-    return 'Hello World!';
-  }
-
-  async createLink(createLinkDto: CreateLinkDto): Promise<any> {
+  async createLink(createLinkDto: CreateLinkDto): Promise<Link> {
     const newDocument = await this.linkModel.create(createLinkDto);
     return newDocument;
   }
 
-  async findOne(id: string): Promise<any> {
+  async findOne(id: string): Promise<Link> {
     return await this.linkModel.findOne({ id });
   }
 
-  async updateOne(id: string, data: any): Promise<any> {
+  async updateOne(id: string, data: any): Promise<Link> {
     return await this.linkModel.findOneAndUpdate({ id }, data as any, {
       new: true,
     });

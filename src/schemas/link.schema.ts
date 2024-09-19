@@ -34,14 +34,6 @@ export class Link {
     }),
   )
   clicks: Record<number, number>;
-
-  // @Prop(
-  //   raw({
-  //     success: number,
-  //     failed: number,
-  //   }),
-  // )
-  // clicks: Record<number, number>;
 }
 
 export const LinkSchema = SchemaFactory.createForClass(Link);
