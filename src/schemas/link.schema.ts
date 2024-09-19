@@ -24,9 +24,6 @@ export class Link {
 
   @Prop({ default: true }) valid: boolean;
 
-  // @Prop(raw({ success: { type: number }, failed: { type: number } }))
-  // clicks: Record<ClicksType>;
-
   @Prop(
     raw({
       success: { type: Number, default: 0 },
