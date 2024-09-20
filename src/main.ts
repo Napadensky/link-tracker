@@ -16,6 +16,10 @@ async function bootstrap() {
 
   const PORT = configService.get(PORT_APP);
 
+  const NODE_ENV = process.env.NODE_ENV || 'development';
+  console.log(`Application is running on port ${PORT}`);
+  console.log(`Application is running in ${NODE_ENV} mode`);
+
   await app.listen(PORT || 3001);
 }
 

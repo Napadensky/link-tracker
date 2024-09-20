@@ -1,11 +1,13 @@
-import { CreateLinkDto } from './dto/create-link.dto';
 import { Injectable } from '@nestjs/common';
-import { Link } from './schemas/link.schema';
+import { CreateLinkDto } from './dto/create-link.dto';
+
 import { Model } from 'mongoose';
+import { Link } from './schemas/link.schema';
+
 import { InjectModel } from '@nestjs/mongoose';
 
 @Injectable()
-export class AppService {
+export class LinksService {
   constructor(
     @InjectModel(Link.name)
     private readonly linkModel: Model<Link>,

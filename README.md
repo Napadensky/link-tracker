@@ -26,7 +26,7 @@ Content-Type: application/json
 
 ### 2. Create a New Short URL
 
-**Endpoint**: `/create`
+**Endpoint**: `/l/create`
 
 **Method**: `POST`
 

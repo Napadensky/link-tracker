@@ -1,15 +1,11 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { ConfigModule } from 'src/config/config.module';
+import { ConfigModule } from '../config/config.module';
 
 @Module({
-  imports: [
-    ConfigModule,
-    MongooseModule.forRoot(
-      `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@${process.env.MONGO_CLUSTER}.fqlh8.mongodb.net/${process.env.MONGO_DATABASE}?retryWrites=true&w=majority&appName=${process.env.MONGO_CLUSTER}`,
-    ),
-  ],
+  imports: [ConfigModule, MongooseModule.forRoot(process.env.MONGO_URL)],
   controllers: [],
   providers: [],
+  exports: [ConfigModule],
 })
 export class DatabaseModule {}

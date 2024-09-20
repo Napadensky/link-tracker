@@ -1,7 +1,8 @@
 import { Prop, raw, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
+import * as bcryptjs from 'bcryptjs';
 
-import { generateShortUrl } from 'src/utils/shortId';
+import { generateShortUrl } from '../utils/shortId';
 
 export type LinkDocument = HydratedDocument<Link>;
 
@@ -33,4 +34,17 @@ export class Link {
   clicks: Record<number, number>;
 }
 
-export const LinkSchema = SchemaFactory.createForClass(Link);
+export const LinkSchema = SchemaFactory.createForClass(Link).pre(
+  'save',
+  async function (next) {
+    if (this.isNew) {
+      this.shortUrl = generateShortUrl();
+    }
+
+    if (this.password) {
+      this.password = await bcryptjs.hash(this.password, 10);
+    }
+
+    next();
+  },
+);
